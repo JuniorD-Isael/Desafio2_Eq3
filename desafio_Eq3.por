@@ -128,6 +128,7 @@ inclua biblioteca Tipos --> tp
     dataLeitura = text2DataArray(dataTexto)
     push(dataLeitura, descricao)
     escreva("\nEvento registrado com sucesso!\n")
+    escreva(totalEventos)
     keyPress()
   }
   funcao inteiro text2DataArray(cadeia data){
@@ -141,6 +142,43 @@ inclua biblioteca Tipos --> tp
     }
     retorne retorno
   }
+
+   funcao vazio menuConsulta(){
+    inteiro consulta = 1
+    inteiro i = 0
+    escreva("\n1- Consultar todos")
+    escreva("\n2- Consultar por data")
+    escreva("\nQual opção você deseja?\n✎ ")
+    leia(consulta)
+    escolha(consulta){
+      caso 1:
+        para(i = 0; i < totalEventos; i++){
+          printEvent(i)
+        }
+        se(totalEventos == 0) 
+          escreva("\nSem eventos registrados.\n")
+        keyPress()
+      pare
+      caso 2:
+        inteiro busca[50], dataPesquisa[5]
+        cadeia leituraDataPesquisa
+        faca{
+          escreva("Precisamos da data no formato [DD-MM-AAAA] para realizar a busca.\n✎ ")
+          leia(leituraDataPesquisa)
+          se(tx.numero_caracteres(leituraDataPesquisa) != 10)
+            escreva("Formato de data inválido.\n\n")
+        }enquanto(tx.numero_caracteres(leituraDataPesquisa) != 10)
+        dataPesquisa = text2DataArray(leituraDataPesquisa)
+        busca = search4Data(dataPesquisa)
+        para(i = 1; i> busca[0]; i++)
+          printEvent(busca[i])            
+        se(busca[0] >= 1)
+          escreva("\nSem eventos registrados nessa data.\n")
+        keyPress()
+      pare
+    }
+  }
+
     // funcoes push e search
   // funcao push
   funcao vazio push(inteiro data[], cadeia descricao) {
@@ -194,6 +232,65 @@ inclua biblioteca Tipos --> tp
 			}
 		}
 	}
+
+  // Funcao que imprime um evento
+  funcao vazio printEvent(inteiro i){
+    inteiro horarioEvento[5]
+      horarioEvento = timestamp2DataArray(diaEventos[i]+horaEventos[i]) 
+      escreva("\nEvento: ",i)
+      escreva("\nDescrição: ",descricaoEventos[i])
+      se(estadoEvento[i])
+        escreva("\nEstado: ☑")
+      senao
+        escreva("\nEstado: ☐")
+      escreva("\n",horarioEvento[0],"-",horarioEvento[1], "-",horarioEvento[2], " as ",horarioEvento[3],":",horarioEvento[4],"\n")
+  }
+
+
+  // nao foi mexido
+  // unix -> data [dia|mes|ano|hora|minuto]
+  funcao inteiro timestamp2DataArray(inteiro unixTimestamp){
+        inteiro totalSegundos = unixTimestamp
+        inteiro totalMinutos = totalSegundos / 60
+        inteiro totalHoras = totalMinutos / 60
+        inteiro totalDias = totalHoras / 24
+        inteiro minuto = totalMinutos % 60
+        inteiro hora = totalHoras % 24
+        inteiro ano = totalDias / 365 + 1970
+        inteiro mes = (totalDias % 365) / 30 + 1
+        inteiro dia = (totalDias % 365) % 30 
+        inteiro retorno[5] = {dia, mes, ano, hora, minuto}
+        retorne retorno
+  }
+
+
+  // funcao de busca por data
+  funcao inteiro search4Data(inteiro data[]){
+    inteiro indices[50]
+    
+    inteiro inicio = 0
+		inteiro fim = totalEventos - 1
+		inteiro meio
+    inteiro parcial[2]
+    parcial = dataArray2Timestamp[data]
+    inteiro dataTimestamp = parcial[0]
+    inteiro ultimoIndicie = 1
+
+    enquanto(inicio <= fim){
+      meio = (inicio - fim)/2
+      se(diaEventos[meio] == dataTimestamp){
+        indices[ultimoIndicie] = meio
+        ultimoIndicie++
+        inicio = meio + 1
+      }senao se(diaEventos[meio] > dataTimestamp){
+        inicio == meio + 1
+      }senao {
+        fim == meio - 1
+      }
+    }
+    indices[0] = ultimoIndicie
+    retorne indices
+}
 
   //keyPress Ok
   funcao vazio keyPress(){
